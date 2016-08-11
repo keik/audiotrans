@@ -5,6 +5,7 @@ DEV_DEPS="requirements-dev.txt"
 
 test: init
 	@echo $(TAG)$@$(END)
+	flake8
 	py.test --verbose tests
 
 init: uninstall
