@@ -5,7 +5,9 @@ import audiotrans
 from setuptools import setup, find_packages
 
 install_requires = [
-    'PyAudio'
+    'PyAudio',
+    'numpy',
+    'matplotlib'
 ]
 
 setup(name='audiotrans',

@@ -5,6 +5,7 @@ from sys import exit
 from os import path
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 from . import cli
+from .visualizer import Visualizer
 
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -24,8 +25,7 @@ def main():
         logger.info('File path is not specified. Read audio inputted from mic.')
 
         # TODO: implement
-        logger.error('Not implemented')
-        exit(1)
+        raise 'Not implemented'
 
     else:
         if not path.isfile(args.filepath):
@@ -35,20 +35,29 @@ def main():
     # ------------------------
     # import modules
     # ------------------------
-    import wave
-    import pyaudio
     import time
+    import wave
     from functools import reduce
+    import numpy as np
+    import pyaudio
+
     trs = _load_transforms(args.transforms)
 
-    p = pyaudio.PyAudio()
+    # ------------------------
+    # read and transform
+    # ------------------------
 
+    transformed_data = None
+    p = pyaudio.PyAudio()
     wf = wave.open(args.filepath)
 
     def callback(in_data, frame_count, time_info, status):
-        data = wf.readframes(frame_count)
-        transformed_data = reduce(lambda acc, m: m.transform(acc), trs, data)
+        nonlocal transformed_data
 
+        data = wf.readframes(frame_count)
+        transformed_data = np.fromstring(data, np.int16) / 2 ** 15
+        transformed_data = reduce(lambda acc, m: m.transform(acc), trs, transformed_data)
+        logger.info('transformed {}: {}'.format(transformed_data.shape, transformed_data))
         return (data, pyaudio.paContinue)
 
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
@@ -59,8 +68,22 @@ def main():
 
     stream.start_stream()
 
+    # ------------------------
+    # read and transform
+    # ------------------------
+
+    if args.chart_type is None:
+        visualizer = None
+
+    else:
+        while transformed_data is None:
+            pass
+        visualizer = Visualizer(chart_type=args.chart_type)
+
     while stream.is_active():
-        time.sleep(0.1)
+        time.sleep(1 / 30)
+        if visualizer is not None:
+            visualizer.draw(transformed_data)
 
     stream.stop_stream()
     stream.close()
@@ -83,7 +106,8 @@ def _load_transforms(transforms):
             lambda c: issubclass(c if inspect.isclass(c) else None.__class__,
                                  Transform))
         if len(tr_class_members) > 1:
-            raise
+            raise 'Transform module must have only one subclass of Transform'
+
         return tr_class_members[0][1](*args, **kwargs)
 
     return [instantiate_transform(tr[0], *tr[1], **tr[2])
