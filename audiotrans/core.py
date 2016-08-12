@@ -78,7 +78,7 @@ def main():
     else:
         while transformed_data is None:
             pass
-        visualizer = Visualizer(chart_type=args.chart_type)
+        visualizer = Visualizer(chart_type=args.chart_type, framerate=wf.getframerate())
 
     while stream.is_active():
         time.sleep(1 / 30)
