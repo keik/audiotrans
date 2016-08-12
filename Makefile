@@ -11,6 +11,7 @@ test: init
 init: uninstall
 	@echo $(TAG)$@$(END)
 	pip install --upgrade -r $(DEV_DEPS)
+	pip install --upgrade --editable .
 
 uninstall:
 	@echo $(TAG)$@$(END)
