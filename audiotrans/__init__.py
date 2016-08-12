@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from .transform import Transform
+
 __desc__ = """Transform audio in real-time"""
 __author__ = 'keik'
 __author_email__ = 'k4t0.kei@gmail.com'
