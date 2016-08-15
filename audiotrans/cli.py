@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import audiotrans
+import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
+import subarg
 
 
 def get_args():
 
+    sys.argv = subarg.parse(sys.argv)
+
     parser = ArgumentParser(
-        description=audiotrans.__desc__,
+        description="""Transform audio in real-time""",
         formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('filepath', nargs='?',

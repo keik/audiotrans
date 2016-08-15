@@ -6,7 +6,8 @@ from setuptools import setup, find_packages
 install_requires = [
     'PyAudio',
     'numpy',
-    'matplotlib'
+    'matplotlib',
+    'subarg'
 ]
 
 setup(name='audiotrans',
@@ -18,7 +19,7 @@ setup(name='audiotrans',
       license='MIT',
       classifiers=[
           'License :: OSI Approved :: MIT License',
-          "Intended Audience :: Developers",
+          'Intended Audience :: Developers',
           'Topic :: Multimedia :: Sound/Audio :: Conversion',
           'Programming Language :: Python',
           'Programming Language :: Python :: 2',

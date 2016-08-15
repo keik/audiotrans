@@ -1,8 +1,13 @@
+
 from abc import ABCMeta, abstractmethod
 
 
 class Transform(metaclass=ABCMeta):
 
     @abstractmethod
-    def transform(self):
+    def __init__(self, args):
+        pass
+
+    @abstractmethod
+    def transform(self, data):
         pass
