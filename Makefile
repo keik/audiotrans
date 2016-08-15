@@ -6,7 +6,7 @@ DEV_DEPS="requirements-dev.txt"
 test: init
 	@echo $(TAG)$@$(END)
 	flake8
-	py.test --verbose tests
+	py.test tests --cov audiotrans --verbose
 
 init: uninstall
 	@echo $(TAG)$@$(END)
@@ -15,4 +15,4 @@ init: uninstall
 
 uninstall:
 	@echo $(TAG)$@$(END)
-	pip uninstall --yes -r $(DEV_DEPS) 2>/dev/null
+	- pip uninstall --yes -r $(DEV_DEPS) 2>/dev/null

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import audiotrans
 from setuptools import setup, find_packages
 
 install_requires = [
@@ -11,11 +10,23 @@ install_requires = [
 ]
 
 setup(name='audiotrans',
-      version=audiotrans.__version__,
-      description=audiotrans.__desc__,
-      author=audiotrans.__author__,
-      author_email=audiotrans.__author_email__,
-      url=audiotrans.__url__,
+      version='0.0.1.dev0',
+      description="""Transform audio in real-time""",
+      author='keik',
+      author_email='k4t0.kei@gmail.com',
+      url='https://github.com/keik/audiotrans',
+      license='MIT',
+      classifiers=[
+          'License :: OSI Approved :: MIT License',
+          "Intended Audience :: Developers",
+          'Topic :: Multimedia :: Sound/Audio :: Conversion',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+      ],
       packages=find_packages(),
       entry_points={
           'console_scripts': [
