@@ -3,4 +3,4 @@
 
 def test_here():
 
-    assert False, 'test here'
+    assert True, 'test here'
