@@ -3,11 +3,28 @@ import matplotlib.pyplot as plt
 
 
 class Visualizer():
+    """
+    Visualize transformed data.
+
+    Parameters
+    ----------
+    chart_type : str
+        chart type to data visualization.
+
+        freq : Display frequency of wave.
+            To plot, transformed data must be formed 1-D array of wave.
+        spec : Display spectrum of wave.
+            To plot, Transformed data must be formed 1-D array of spectrum
+            or 2-D array of spectrogram.
+
+    framerate : int
+        framerate of loading data
+    """
 
     def __init__(self, chart_type, framerate):
 
         if chart_type not in ['freq', 'spec']:
-            raise
+            raise TypeError('chart_type can accept `freq` or `spec`')
 
         self.fig = plt.figure()
         self.axes = self.fig.add_subplot(1, 1, 1)
@@ -32,6 +49,9 @@ class Visualizer():
 
     def _draw_freq(self, data):
         self.fig.canvas.restore_region(self.background)
+
+        if len(np.shape(data)) != 1:
+            raise TypeError('To draw frequency, input data must formed 1-D array')
 
         d = data[::self.xhop]
         prev_x, prev_y = self.line.get_data()
