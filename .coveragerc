@@ -1,0 +1,4 @@
+[run]
+omit =
+  audiotrans/__main__.py
+  audiotrans/transform.py
