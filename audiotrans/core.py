@@ -5,7 +5,9 @@ from sys import exit
 from os import path
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 from . import cli
+from . import load_transforms
 from .visualizer import Visualizer
+
 
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -41,7 +43,7 @@ def main():
     import numpy as np
     import pyaudio
 
-    trs = _load_transforms(args.transforms)
+    trs = load_transforms(args.transforms)
 
     # ------------------------
     # read and transform
@@ -90,28 +92,3 @@ def main():
     wf.close()
 
     p.terminate()
-
-
-def _load_transforms(transforms):
-
-    from . import Transform
-    import inspect
-
-    # normalize arguments to form as [(name, [option, ...]), ...]
-    transforms_with_argv = map(lambda t: (t[0], t[1:]) if isinstance(t, list) else (t, []),
-                               transforms)
-
-    def instantiate_transform(module_name, argv):
-        tr_module = __import__(module_name)
-        tr_classes = inspect.getmembers(
-            tr_module,
-            lambda c: issubclass(c if inspect.isclass(c) else None.__class__,
-                                 Transform))
-        if len(tr_classes) > 1:
-            raise 'Transform module must have only one subclass of Transform'
-
-        tr_class = tr_classes[0]
-        return tr_class[1](argv)
-
-    return [instantiate_transform(tr[0], tr[1])
-            for tr in transforms_with_argv]
