@@ -59,13 +59,14 @@ def main():
         data = wf.readframes(frame_count)
         transformed_data = np.fromstring(data, np.int16) / 2 ** 15
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs, transformed_data)
-        logger.info('transformed {}: {}'.format(transformed_data.shape, transformed_data))
+        logger.info('transformed data is formed {}'.format(transformed_data.shape))
         return (data, pyaudio.paContinue)
 
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                     channels=wf.getnchannels(),
                     rate=wf.getframerate(),
                     output=True,
+                    frames_per_buffer=int(args.buffer_size),
                     stream_callback=callback)
 
     stream.start_stream()
