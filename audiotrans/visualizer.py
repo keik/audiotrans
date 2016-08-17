@@ -63,8 +63,12 @@ class Visualizer():
     def _draw_spec(self, data):
         self.fig.canvas.restore_region(self.background)
 
-        d = np.abs(data)
-        self.axes.set_xlim(0, len(d) / 2)
+        dim = len(np.shape(data))
+        if dim == 1:
+            d = np.abs(data)
+        elif dim == 2:
+            d = np.abs(data.T[0])
+        self.axes.set_xlim(0, len(d))
 
         self.line.set_data(np.arange(len(d)), d)
         self.axes.draw_artist(self.line)
