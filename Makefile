@@ -6,13 +6,20 @@ DEV_DEPS="requirements-dev.txt"
 test: init
 	@echo $(TAG)$@$(END)
 	flake8
-	py.test tests --cov audiotrans -n 4 --verbose
+	py.test tests --cov $(SELF) -n 4 --verbose
 
-init: uninstall
+test-all: uninstall-all test
+	@echo
+
+init: uninstall-self
 	@echo $(TAG)$@$(END)
 	pip install --upgrade -r $(DEV_DEPS)
 	pip install --upgrade --editable .
 
-uninstall:
+uninstall-all: uninstall-self
 	@echo $(TAG)$@$(END)
 	- pip uninstall --yes -r $(DEV_DEPS) 2>/dev/null
+
+uninstall-self:
+	@echo $(TAG)$@$(END)
+	- pip uninstall --yes $(SELF) 2>/dev/null
