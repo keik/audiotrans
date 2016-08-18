@@ -8,13 +8,8 @@ import audiotrans.core
 
 
 class MockStream():
-    def __init__(self, format, channels, rate, output, stream_callback):
-        self.format = format
-        self.channels = channels
-        self.rate = rate
-        self.output = output
-        self.stream_callback = stream_callback
-
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
         self.counter = 0
 
     def start_stream(self):

@@ -24,7 +24,9 @@ def load_transforms(transforms):
                                transforms)
 
     def instantiate_transform(module_name, argv):
-        tr_module = __import__(TRANSFORM_MODULE_PREFIX + module_name, fromlist=['dummy'])
+        tr_module = __import__(
+            module_name if module_name.count('.') > 0 else TRANSFORM_MODULE_PREFIX + module_name,
+            fromlist=['dummy'])
         tr_classes = inspect.getmembers(
             tr_module,
             lambda c: issubclass(c if inspect.isclass(c) else None.__class__,

@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from audiotrans.visualizer import Visualizer
 
 
@@ -15,9 +16,9 @@ def test_draw_freq():
     assert visualizer.draw == visualizer._draw_freq, \
         """`draw` method is now for freq"""
 
-    visualizer.draw([1, 2, 3, 4, 5])
+    visualizer.draw(np.array([1, 2, 3, 4, 5]))
     with pytest.raises(TypeError):
-        visualizer.draw([[1, 2, 3, 4, 5]])
+        visualizer.draw(np.array([[1, 2, 3, 4, 5]]))
 
 
 def test_draw_spec():
@@ -26,5 +27,5 @@ def test_draw_spec():
     assert visualizer.draw == visualizer._draw_spec, \
         """`draw` method is now for spec"""
 
-    visualizer.draw([1, 2, 3, 4, 5])
-    visualizer.draw([[1, 2, 3, 4, 5]])
+    visualizer.draw(np.array([1, 2, 3, 4, 5]))
+    visualizer.draw(np.array([[1, 2, 3, 4, 5]]))
