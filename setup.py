@@ -11,7 +11,7 @@ install_requires = [
 ]
 
 setup(name='audiotrans',
-      version='0.1.0.dev0',
+      version='0.1.0.dev1',
       description="""Transform audio in real-time""",
       author='keik',
       author_email='k4t0.kei@gmail.com',
