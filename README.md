@@ -11,7 +11,7 @@ Transform audio in real-time.
 
 ## Installation
 
-audiotrans use [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/) which depends [PortAudio](http://www.portaudio.com/). So we have to install PortAudio in ways of each platformas.
+audiotrans use [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/) which depends [PortAudio](http://www.portaudio.com/). So we have to install PortAudio in ways of each platforms.
 
 Then
 
