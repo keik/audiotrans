@@ -3,6 +3,7 @@
 
 from sys import exit
 from os import path
+from array import array
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 from . import cli
 from . import load_transforms
@@ -60,6 +61,13 @@ def main():
         transformed_data = np.fromstring(data, np.int16) / 2 ** 15
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs, transformed_data)
         logger.info('transformed data is formed {}'.format(transformed_data.shape))
+
+        # TODO: output remixed wave properly method
+        if len(transformed_data.shape) == 1:
+            ndata = array('h', (transformed_data * 2 ** 15).astype(int)).tostring()
+            if len(data) == len(ndata):
+                data = ndata
+
         return (data, pyaudio.paContinue)
 
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
@@ -83,7 +91,7 @@ def main():
 
     while stream.is_active():
         time.sleep(1 / 30)
-        if visualizer is not None:
+        if visualizer is not None and transformed_data is not None:
             visualizer.draw(transformed_data)
 
     stream.stop_stream()
