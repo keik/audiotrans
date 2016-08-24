@@ -58,8 +58,8 @@ def main():
         nonlocal transformed_data
 
         data = wf.readframes(frame_count)
-        transformed_data = np.fromstring(data, np.int16) / 2 ** 15
-        transformed_data = reduce(lambda acc, m: m.transform(acc), trs, transformed_data)
+        transformed_data = reduce(lambda acc, m: m.transform(acc), trs,
+                                  np.fromstring(data, np.int16) / 2 ** 15)
         logger.info('transformed data is formed {}'.format(transformed_data.shape))
 
         # TODO: output remixed wave properly method
