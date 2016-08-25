@@ -16,6 +16,8 @@ class Visualizer():
         spec : Display spectrum of wave.
             To plot, Transformed data must be formed 1-D array of spectrum
             or 2-D array of spectrogram.
+        specflux : Display spectral flux
+            To plot, transformed data must be formed 1-D array of wave.
 
     framerate : int
         framerate of loading data
@@ -52,6 +54,8 @@ class Visualizer():
         self.fig.show()
 
         self.background = self.fig.canvas.copy_from_bbox(self.axes.bbox)
+
+        # TODO: modular
         self.lines = self.axes.plot((np.zeros((1000, 2))))
 
     def _draw_freq(self, data):
