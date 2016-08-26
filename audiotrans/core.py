@@ -101,6 +101,8 @@ def main():
         time.sleep(1 / 30)
         if visualizer is not None and transformed_data is not None:
             visualizer.draw(transformed_data)
+            # clear transformed data after rendering to prevent render same data many times
+            transformed_data = None
 
     stream.stop_stream()
     stream.close()
