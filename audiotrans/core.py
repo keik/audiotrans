@@ -8,6 +8,7 @@ from logging import getLogger, StreamHandler, Formatter, DEBUG
 from . import cli
 from . import load_transforms
 from .visualizer import Visualizer
+from threading import Lock
 
 
 logger = getLogger(__name__)
@@ -53,6 +54,7 @@ def main():
     # initialize visualizer
     # ------------------------
 
+    lock = Lock()
     if args.chart_type is None:
         visualizer = None
 
@@ -63,11 +65,11 @@ def main():
     # read and transform
     # ------------------------
 
-    transformed_data = None
+    transformed_data_buffer = None
     p = pyaudio.PyAudio()
 
     def callback(in_data, frame_count, time_info, status):
-        nonlocal transformed_data
+        nonlocal transformed_data_buffer
 
         data = wf.readframes(frame_count)
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs,
@@ -75,6 +77,18 @@ def main():
         logger.info('transformed data is formed {}'
                     .format([t.shape for t in transformed_data]
                             if type(transformed_data) is tuple else transformed_data.shape))
+
+        lock.acquire()
+        if transformed_data_buffer is None:
+            transformed_data_buffer = transformed_data
+        else:
+            if type(transformed_data) is tuple:
+                transformed_data_buffer = [np.append(transformed_data_buffer[i],
+                                                     transformed_data[i])
+                                           for i in range(len(transformed_data_buffer))]
+            else:
+                transformed_data_buffer = np.append(transformed_data_buffer, transformed_data)
+        lock.release()
 
         # # TODO: output remixed wave properly method
         if type(transformed_data) is not tuple and len(transformed_data.shape) == 1:
@@ -103,10 +117,12 @@ def main():
 
     while stream.is_active():
         time.sleep(1 / 30)
-        if visualizer is not None and transformed_data is not None:
-            visualizer.draw(transformed_data)
-            # clear transformed data after rendering to prevent render same data many times
-            transformed_data = None
+        if visualizer is not None and transformed_data_buffer is not None:
+            # draw and clear transformed data to prevent render same data many times
+            lock.acquire()
+            visualizer.draw(transformed_data_buffer)
+            transformed_data_buffer = None
+            lock.release()
 
     stream.stop_stream()
     stream.close()
