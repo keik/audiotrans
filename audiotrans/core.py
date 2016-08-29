@@ -74,15 +74,18 @@ def main():
         data = wf.readframes(frame_count)
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs,
                                   np.fromstring(data, np.int16) / 2 ** 15)
+
+        istuple = type(transformed_data) is tuple
+
         logger.info('transformed data is formed {}'
                     .format([t.shape for t in transformed_data]
-                            if type(transformed_data) is tuple else transformed_data.shape))
+                            if istuple else transformed_data.shape))
 
         lock.acquire()
         if transformed_data_buffer is None:
             transformed_data_buffer = transformed_data
         else:
-            if type(transformed_data) is tuple:
+            if istuple:
                 transformed_data_buffer = [np.append(transformed_data_buffer[i],
                                                      transformed_data[i])
                                            for i in range(len(transformed_data_buffer))]
@@ -90,11 +93,10 @@ def main():
                 transformed_data_buffer = np.append(transformed_data_buffer, transformed_data)
         lock.release()
 
-        # # TODO: output remixed wave properly method
-        if type(transformed_data) is not tuple and len(transformed_data.shape) == 1:
-            ndata = array('h', (transformed_data * 2 ** 15).astype(int)).tostring()
-            if len(data) == len(ndata):
-                data = ndata
+        x = transformed_data[0] if istuple else transformed_data
+        if len(x) * 2 == len(data):
+            ndata = array('h', (x * 2 ** 15).astype(int)).tostring()
+            data = ndata
 
         if visualizer is not None and visualizer.init is False:
             while visualizer.init is False:

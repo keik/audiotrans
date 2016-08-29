@@ -17,6 +17,7 @@ def test_draw_freq():
         """`draw_data` method is now for freq"""
 
     visualizer.draw(np.array([1, 2, 3, 4, 5]))
+    visualizer.draw(np.array([1, 2, 3, 4, 5]),)
     with pytest.raises(TypeError):
         visualizer.draw(np.array([[1, 2, 3, 4, 5]]))
 
