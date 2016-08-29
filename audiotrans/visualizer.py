@@ -29,6 +29,7 @@ class Visualizer():
         if chart_type not in ['freq', 'spec', 'specflux']:
             raise TypeError('chart_type can accept `freq` or `spec` or `specflux`')
 
+        self.init = False
         self.fig = plt.figure()
         self.axes = self.fig.add_subplot(1, 1, 1)
         self.axes.set_aspect('auto')
@@ -55,7 +56,7 @@ class Visualizer():
         self.background = None
 
     def draw(self, data):
-        if self.background is None:
+        if self.init is False:
 
             # update draw method to omit condition evaluation for performance
             if type(data) is tuple:
@@ -75,6 +76,7 @@ class Visualizer():
                 l.set_data(np.arange(xlen), np.zeros(xlen))
 
         self.draw(data)
+        self.init = True
 
     def _draw_series(self, data):
         self.fig.canvas.restore_region(self.background)

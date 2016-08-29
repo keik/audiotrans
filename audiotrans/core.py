@@ -82,6 +82,10 @@ def main():
             if len(data) == len(ndata):
                 data = ndata
 
+        if visualizer is not None and visualizer.init is False:
+            while visualizer.init is False:
+                time.sleep(0.01)
+
         return (data, pyaudio.paContinue)
 
     # ------------------------
