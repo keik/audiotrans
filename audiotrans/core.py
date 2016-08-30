@@ -88,9 +88,8 @@ def main():
             transformed_data_buffer = transformed_data
         else:
             if istuple:
-                transformed_data_buffer = [np.append(transformed_data_buffer[i],
-                                                     transformed_data[i])
-                                           for i in range(len(transformed_data_buffer))]
+                transformed_data_buffer = [np.append(t, transformed_data[i])
+                                           for i, t in enumerate(transformed_data_buffer)]
             else:
                 transformed_data_buffer = np.append(transformed_data_buffer, transformed_data)
         lock.release()
