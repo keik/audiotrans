@@ -49,6 +49,8 @@ def main():
     trs = load_transforms(args.transforms)
 
     wf = wave.open(args.filepath)
+    channels = wf.getnchannels()
+    framerate = wf.getframerate()
 
     # ------------------------
     # initialize visualizer
@@ -59,7 +61,7 @@ def main():
         visualizer = None
 
     else:
-        visualizer = Visualizer(chart_type=args.chart_type, framerate=wf.getframerate())
+        visualizer = Visualizer(chart_type=args.chart_type, framerate=framerate)
 
     # ------------------------
     # read and transform
@@ -73,7 +75,7 @@ def main():
 
         data = wf.readframes(frame_count)
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs,
-                                  np.fromstring(data, np.int16) / 2 ** 15)
+                                  np.fromstring(data, np.int16).reshape(-1, channels).T[0] / 2**15)
 
         istuple = type(transformed_data) is tuple
 
@@ -94,8 +96,8 @@ def main():
         lock.release()
 
         x = transformed_data[0] if istuple else transformed_data
-        if len(x) * 2 == len(data):
-            ndata = array('h', (x * 2 ** 15).astype(int)).tostring()
+        if len(x) * 2 * channels == len(data):
+            ndata = array('h', (np.repeat(x, channels) * 2 ** 15).astype(int)).tostring()
             data = ndata
 
         if visualizer is not None and visualizer.init is False:
@@ -109,8 +111,8 @@ def main():
     # ------------------------
 
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
+                    channels=channels,
+                    rate=framerate,
                     output=True,
                     frames_per_buffer=int(args.buffer_size),
                     stream_callback=callback)
