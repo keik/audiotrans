@@ -11,13 +11,25 @@ def test_instantiate_with_invalid_chart_type(chart_type):
 
 
 def test_draw_freq():
-    visualizer = Visualizer(chart_type='freq', framerate=44100)
 
+    # draw single series
+    visualizer = Visualizer(chart_type='freq', framerate=44100)
     assert visualizer.draw_data == draw_freq, \
         """`draw_data` method is now for freq"""
-
     visualizer.draw(np.array([1, 2, 3, 4, 5]))
     visualizer.draw(np.array([1, 2, 3, 4, 5]),)
+
+    # draw multi series
+    visualizer = Visualizer(chart_type='freq', framerate=44100)
+    assert visualizer.draw_data == draw_freq, \
+        """`draw_data` method is now for freq"""
+    visualizer.draw((np.array([1, 2, 3, 4, 5]),
+                     np.array([1, 2, 3, 4, 5])))
+    visualizer.draw((np.array([1, 2, 3, 4, 5]),
+                     np.array([1, 2, 3, 4, 5])))
+
+    # try to draw 2-D matrix and fail
+    visualizer = Visualizer(chart_type='freq', framerate=44100)
     with pytest.raises(TypeError):
         visualizer.draw(np.array([[1, 2, 3, 4, 5]]))
 
