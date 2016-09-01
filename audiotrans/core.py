@@ -8,6 +8,7 @@ from logging import getLogger, StreamHandler, Formatter, DEBUG
 from . import cli
 from . import load_transforms
 from .visualizer import Visualizer
+from threading import Lock
 
 
 logger = getLogger(__name__)
@@ -38,6 +39,7 @@ def main():
     # ------------------------
     # import modules
     # ------------------------
+
     import time
     import wave
     from functools import reduce
@@ -46,53 +48,84 @@ def main():
 
     trs = load_transforms(args.transforms)
 
+    wf = wave.open(args.filepath)
+    channels = wf.getnchannels()
+    framerate = wf.getframerate()
+
+    # ------------------------
+    # initialize visualizer
+    # ------------------------
+
+    lock = Lock()
+    if args.chart_type is None:
+        visualizer = None
+
+    else:
+        visualizer = Visualizer(chart_type=args.chart_type, framerate=framerate)
+
     # ------------------------
     # read and transform
     # ------------------------
 
-    transformed_data = None
+    transformed_data_buffer = None
     p = pyaudio.PyAudio()
-    wf = wave.open(args.filepath)
 
     def callback(in_data, frame_count, time_info, status):
-        nonlocal transformed_data
+        nonlocal transformed_data_buffer
 
         data = wf.readframes(frame_count)
         transformed_data = reduce(lambda acc, m: m.transform(acc), trs,
-                                  np.fromstring(data, np.int16) / 2 ** 15)
-        logger.info('transformed data is formed {}'.format(transformed_data.shape))
+                                  np.fromstring(data, np.int16).reshape(-1, channels).T[0] / 2**15)
 
-        # TODO: output remixed wave properly method
-        if len(transformed_data.shape) == 1:
-            ndata = array('h', (transformed_data * 2 ** 15).astype(int)).tostring()
-            if len(data) == len(ndata):
-                data = ndata
+        istuple = type(transformed_data) is tuple
+
+        logger.info('transformed data is formed {}'
+                    .format([t.shape for t in transformed_data]
+                            if istuple else transformed_data.shape))
+
+        lock.acquire()
+        if transformed_data_buffer is None:
+            transformed_data_buffer = transformed_data
+        else:
+            if istuple:
+                transformed_data_buffer = [np.append(t, transformed_data[i])
+                                           for i, t in enumerate(transformed_data_buffer)]
+            else:
+                transformed_data_buffer = np.append(transformed_data_buffer, transformed_data)
+        lock.release()
+
+        x = transformed_data[0] if istuple else transformed_data
+        if len(x) * 2 * channels == len(data):
+            ndata = array('h', (np.repeat(x, channels) * 2 ** 15).astype(int)).tostring()
+            data = ndata
+
+        if visualizer is not None and visualizer.init is False:
+            while visualizer.init is False:
+                time.sleep(0.01)
 
         return (data, pyaudio.paContinue)
 
+    # ------------------------
+    # read and transform
+    # ------------------------
+
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
+                    channels=channels,
+                    rate=framerate,
                     output=True,
                     frames_per_buffer=int(args.buffer_size),
                     stream_callback=callback)
 
     stream.start_stream()
 
-    # ------------------------
-    # read and transform
-    # ------------------------
-
-    if args.chart_type is None:
-        visualizer = None
-
-    else:
-        visualizer = Visualizer(chart_type=args.chart_type, framerate=wf.getframerate())
-
     while stream.is_active():
         time.sleep(1 / 30)
-        if visualizer is not None and transformed_data is not None:
-            visualizer.draw(transformed_data)
+        if visualizer is not None and transformed_data_buffer is not None:
+            # draw and clear transformed data to prevent render same data many times
+            lock.acquire()
+            visualizer.draw(transformed_data_buffer)
+            transformed_data_buffer = None
+            lock.release()
 
     stream.stop_stream()
     stream.close()

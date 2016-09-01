@@ -3,6 +3,8 @@ import pytest
 
 import sys
 import time
+from threading import Thread
+from queue import Queue, Empty
 
 import audiotrans.core
 
@@ -12,17 +14,28 @@ class MockStream():
         self.__dict__.update(kwargs)
         self.counter = 0
 
-    def start_stream(self):
-        for i in range(3):
+        # mocking with thread, which would raise exceptions
+        self.t = Thread(target=self.run)
+        self.t.e = Queue()  # store exceptions
+
+    def run(self):
+        for i in range(10):
             time.sleep(0.1)
-            self.stream_callback(None, 100, None, None)
+            try:
+                self.stream_callback(None, 100, None, None)
+            except:
+                self.t.e.put(sys.exc_info()[1])
+
+    def start_stream(self):
+        self.t.start()
 
     def is_active(self):
-        self.counter += 1
-        if self.counter < 10:
-            return True
-        else:
-            return False
+        try:
+            raise self.t.e.get(block=False)  # retrieve stored exception
+        except Empty:
+            pass
+
+        return self.t.isAlive()
 
     def stop_stream(self):
         pass
@@ -34,28 +47,42 @@ class MockStream():
 @mock.patch('pyaudio.PyAudio.open',
             new=lambda self, **kwargs: MockStream(**kwargs))
 def test_with_verbose_mode():
-    sys.argv[1:] = ['data/drums.wav', '-v']
+    sys.argv[1:] = ['tests/fixture/drums-mono.wav', '-v']
     audiotrans.core.main()
 
 
 @mock.patch('pyaudio.PyAudio.open',
             new=lambda self, **kwargs: MockStream(**kwargs))
 def test_with_visualizer():
-    sys.argv[1:] = ['data/drums.wav', '-c', 'freq']
+    sys.argv[1:] = ['tests/fixture/drums-mono.wav', '-c', 'freq']
     audiotrans.core.main()
 
 
 @mock.patch('pyaudio.PyAudio.open',
             new=lambda self, **kwargs: MockStream(**kwargs))
 def test_with_filepath():
-    sys.argv[1:] = ['data/drums.wav']
+    sys.argv[1:] = ['tests/fixture/drums-mono.wav']
+    audiotrans.core.main()
+
+
+@mock.patch('pyaudio.PyAudio.open',
+            new=lambda self, **kwargs: MockStream(**kwargs))
+def test_with_filepath_of_stereo():
+    sys.argv[1:] = ['tests/fixture/drums-stereo.wav']
+    audiotrans.core.main()
+
+
+@mock.patch('pyaudio.PyAudio.open',
+            new=lambda self, **kwargs: MockStream(**kwargs))
+def test_with_transform_which_returns_tuple():
+    sys.argv[1:] = ['tests/fixture/drums-mono.wav', '-t', 'fixture.audiotrans_transform_tuple']
     audiotrans.core.main()
 
 
 @mock.patch('pyaudio.PyAudio.open',
             new=lambda self, **kwargs: MockStream(**kwargs))
 def test_with_invalid_filepath():
-    sys.argv[1:] = ['data/invalid.wav']
+    sys.argv[1:] = ['invalid.wav']
     with pytest.raises(SystemExit):
         audiotrans.core.main()
 

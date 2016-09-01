@@ -35,15 +35,18 @@ def get_args():
 Specified module name is auto-prefixed `audiotrans_transform_`,
 so to use `audiotrans_transform_stft`, you may just specify `stft`.""")
 
+    # TODO: modular
     parser.add_argument('-c', '--chart-type', dest='chart_type',
                         help="""Chart type to data visualization.
 Below values are available:
 
-  freq : Display frequency of wave.
-         To plot, transformed data must be formed 1-D array of wave.
-  spec : Display spectrum of wave.
-         To plot, Transformed data must be formed 1-D array of spectrum
-         or 2-D array of spectrogram.
+  freq     : Display frequency of wave.
+             To plot, transformed data must be formed 1-D array of wave.
+  spec     : Display spectrum of wave.
+             To plot, Transformed data must be formed 1-D array of spectrum
+             or 2-D array of spectrogram.
+  specflux : Display spectral flux
+             To plot, transformed data must be formed 1-D array of wave.
 
 Or if not specified, no chart appears.""")
 
